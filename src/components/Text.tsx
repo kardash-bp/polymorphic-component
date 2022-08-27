@@ -8,15 +8,18 @@ type Rainbow =
   | 'blue'
   | 'indigo'
   | 'violet'
-type TextProps<T extends React.ElementType> = {
+
+type AsProp<T extends React.ElementType> = {
   as?: T
-  color?: Rainbow | 'black'
 }
 
-type Props<T extends React.ElementType> = React.PropsWithChildren<
-  TextProps<T>
-> &
-  Omit<React.ComponentPropsWithoutRef<T>, keyof TextProps<T>>
+type PropsToOmit<T extends React.ElementType, P> = keyof (AsProp<T> & P)
+
+type PolymorphicComponentProps<
+  T extends React.ElementType,
+  Props = {}
+> = React.PropsWithChildren<Props & AsProp<T>> &
+  Omit<React.ComponentPropsWithoutRef<T>, PropsToOmit<T, Props>>
 
 export const Text = <T extends React.ElementType = 'span'>({
   as,
@@ -24,7 +27,7 @@ export const Text = <T extends React.ElementType = 'span'>({
   color,
   children,
   ...restProps
-}: Props<T>) => {
+}: PolymorphicComponentProps<T, { color?: Rainbow | 'black' }>) => {
   const Component = as || 'span'
   const internalStyles = color ? { style: { ...style, color } } : {}
 
